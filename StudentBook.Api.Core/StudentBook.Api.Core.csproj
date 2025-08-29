@@ -6,4 +6,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\StudentBook.Api.Data\StudentBook.Api.Data.csproj" />
+    </ItemGroup>
+
 </Project>

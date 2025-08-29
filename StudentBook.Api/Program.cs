@@ -1,6 +1,18 @@
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+using StudentBook.Api;
+using StudentBook.Api.Common;
+using StudentBook.Api.Core;
+using StudentBook.Api.Data;
 
-app.MapGet("/", () => "Hello World!");
+var builder = WebApplication.CreateBuilder(args);
+builder
+    .AddCommon()
+    .AddData()
+    .AddCore()
+    .AddApi();
+
+var app = builder.Build();
+app
+    .UseApi()
+    .MapApi();
 
 app.Run();
