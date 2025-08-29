@@ -1,4 +1,5 @@
 using Scalar.AspNetCore;
+using StudentBook.Api.Extensions;
 
 namespace StudentBook.Api;
 
@@ -20,6 +21,9 @@ public static class Setup
             {
                 options.SubstituteApiVersionInUrl = true;
             });
+        
+        // Endpoints
+        builder.Services.AddApiEndpointsFromAssembly<Program>();
 
         return builder;
     }
@@ -42,17 +46,13 @@ public static class Setup
             options.OperationSorter = OperationSorter.Alpha;
         });
         
+        // ApiVersioning
         var api = builder.NewVersionedApi();
         var group = api.MapGroup("/api/v{version:apiVersion}");
         
-        group.MapGet("/hello", () =>  "Hello World!")
-            .WithTags(Constants.Api.Tags.Hello)
-            .HasApiVersion(Constants.Api.Versions.V1);
-        
-        group.MapGet("/world", () =>  "Hello World!")
-            .WithTags(Constants.Api.Tags.World)
-            .HasApiVersion(Constants.Api.Versions.V1);
-        
+        // ApiEndpoints
+        builder.MapApiEndpoints(group);
+
         return builder;
     }
 }

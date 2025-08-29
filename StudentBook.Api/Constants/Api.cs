@@ -12,6 +12,5 @@ internal static class Api
     internal static class Tags
     {
         internal static readonly string Hello = nameof(Hello);
-        internal static readonly string World = nameof(World);
     }
 }
