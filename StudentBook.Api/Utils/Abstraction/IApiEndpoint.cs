@@ -1,6 +1,6 @@
 using Asp.Versioning;
 
-namespace StudentBook.Api.Abstraction;
+namespace StudentBook.Api.Utils.Abstraction;
 
 internal interface IApiEndpoint
 {

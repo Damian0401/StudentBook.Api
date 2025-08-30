@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using StudentBook.Api.Abstraction;
+using StudentBook.Api.Utils.Abstraction;
 
-namespace StudentBook.Api.Extensions;
+namespace StudentBook.Api.Utils.Extensions;
 
 public static class ApiEndpointsDiscovery
 {
@@ -12,15 +12,15 @@ public static class ApiEndpointsDiscovery
         var types = typeof(TAssembly)
             .Assembly
             .DefinedTypes
-            .Where(x => 
-                x is {IsAbstract: false, IsInterface: false} && 
+            .Where(x =>
+                x is {IsAbstract: false, IsInterface: false} &&
                 x.IsAssignableTo(typeof(IApiEndpoint)))
-            .Select(t => 
+            .Select(t =>
                 ServiceDescriptor.Describe(typeof(IApiEndpoint), t, lifetime));
         services.TryAddEnumerable(types);
         return services;
     }
-    
+
     public static RouteGroupBuilder MapApiEndpoints(
         this IEndpointRouteBuilder builder,
         RouteGroupBuilder group)

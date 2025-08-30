@@ -1,6 +1,6 @@
 using Asp.Versioning;
 
-namespace StudentBook.Api.Constants;
+namespace StudentBook.Api.Utils.Constants;
 
 internal static class Api
 {
@@ -8,9 +8,10 @@ internal static class Api
     {
         internal static readonly ApiVersion V1 = new(1);
     }
-    
+
     internal static class Tags
     {
-        internal static readonly string Hello = nameof(Hello);
+        internal const string Students = nameof(Students);
+        internal const string Classes = nameof(Classes);
     }
 }

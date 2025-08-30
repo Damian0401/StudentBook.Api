@@ -1,8 +1,8 @@
 using FluentValidation;
 
-namespace StudentBook.Api.Filters;
+namespace StudentBook.Api.Utils.Filters;
 
-public class FluentValidationEndpointFilter : IEndpointFilter
+public sealed class FluentValidationEndpointFilter : IEndpointFilter
 {
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
@@ -15,14 +15,14 @@ public class FluentValidationEndpointFilter : IEndpointFilter
             {
                 continue;
             }
-            
+
             var validatorType = typeof(IValidator<>).MakeGenericType(argument.GetType());
             var validator = services.GetService(validatorType);
             if (validator is not IValidator validatorInstance)
             {
                 continue;
             }
-            
+
             var validationContext = new ValidationContext<object>(argument);
             var validationResult = await validatorInstance.ValidateAsync(validationContext, cancellationToken);
             if (!validationResult.IsValid)
@@ -30,7 +30,7 @@ public class FluentValidationEndpointFilter : IEndpointFilter
                 return TypedResults.ValidationProblem(validationResult.ToDictionary());
             }
         }
-        
+
         return await next(context);
     }
 }
