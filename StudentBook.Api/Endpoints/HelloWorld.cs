@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using StudentBook.Api.Abstraction;
@@ -15,16 +16,25 @@ internal sealed class HelloWorld : IApiEndpoint
             .MapGet("/hello", HandleAsync);
     }
 
-    private static async Task<Ok<string>> HandleAsync(
+    private static async Task<Results<Ok<string>, ValidationProblem>> HandleAsync(
         [AsParameters] Parameters parameters)
     {
         await Task.CompletedTask;
         return TypedResults.Ok($"Hello {parameters.Name}!");
     }
+
+    internal class Validator : AbstractValidator<Parameters>
+    {
+        public Validator()
+        {
+            RuleFor(x => x.Name)
+                .NotEmpty();
+        }
+    }
     
-    private readonly struct Parameters
+    internal readonly struct Parameters
     {
         [FromQuery]
-        public required string Name { get; init; } 
+        public required string Name { get; init; }
     }
 }

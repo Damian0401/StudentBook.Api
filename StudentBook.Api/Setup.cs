@@ -1,5 +1,8 @@
+using System.Globalization;
+using FluentValidation;
 using Scalar.AspNetCore;
 using StudentBook.Api.Extensions;
+using StudentBook.Api.Filters;
 
 namespace StudentBook.Api;
 
@@ -22,9 +25,16 @@ public static class Setup
                 options.SubstituteApiVersionInUrl = true;
             });
         
+        // FluentValidation
+        ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("en");
+        builder.Services.AddValidatorsFromAssemblyContaining<Program>(includeInternalTypes: true);
+        
         // Endpoints
         builder.Services.AddApiEndpointsFromAssembly<Program>();
-
+        
+        // Other
+        builder.Services.AddProblemDetails();
+        
         return builder;
     }
 
@@ -49,6 +59,9 @@ public static class Setup
         // ApiVersioning
         var api = builder.NewVersionedApi();
         var group = api.MapGroup("/api/v{version:apiVersion}");
+        
+        // FluentValidation
+        group.AddEndpointFilter<FluentValidationEndpointFilter>();
         
         // ApiEndpoints
         builder.MapApiEndpoints(group);
