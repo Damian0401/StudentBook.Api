@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using StudentBook.Api.Data.Utils.Abstraction;
 using StudentBook.Api.Data.Utils.Constants;
-using StudentBook.Api.Data.Utils.ValueConverters;
+using StudentBook.Api.Data.Utils.ValueGenerators;
 
 namespace StudentBook.Api.Data.Entities;
 
@@ -30,11 +30,12 @@ public sealed record StudentEntity : BaseEntity<Guid>
             // Relations
             builder.HasOne(x => x.Class)
                 .WithMany(x => x.Students)
-                .HasForeignKey(x => x.ClassId);
+                .HasForeignKey(x => x.ClassId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Properties
             builder.Property(x => x.Id)
-                .HasConversion(new GuidVersion7Converter());
+                .HasValueGenerator<GuidV7ValueGenerator>();
             builder.HasIndex(x => x.Identifier)
                 .IsUnique();
         }

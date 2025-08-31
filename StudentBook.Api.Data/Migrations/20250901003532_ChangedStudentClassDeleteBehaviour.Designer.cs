@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudentBook.Api.Data;
 
@@ -10,9 +11,11 @@ using StudentBook.Api.Data;
 namespace StudentBook.Api.Data.Migrations
 {
     [DbContext(typeof(StudentBookDb))]
-    partial class StudentBookDbModelSnapshot : ModelSnapshot
+    [Migration("20250901003532_ChangedStudentClassDeleteBehaviour")]
+    partial class ChangedStudentClassDeleteBehaviour
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.8");

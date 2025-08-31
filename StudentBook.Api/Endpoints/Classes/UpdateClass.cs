@@ -1,9 +1,12 @@
 using Asp.Versioning;
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using StudentBook.Api.Endpoints.Classes.Models;
+using StudentBook.Api.Core.Features.Classes.Commands;
+using StudentBook.Api.Core.Features.Classes.Models;
 using StudentBook.Api.Utils.Abstraction;
+using StudentBook.Api.Utils.Extensions;
 
 namespace StudentBook.Api.Endpoints.Classes;
 
@@ -17,12 +20,14 @@ public sealed class UpdateClass : IApiEndpoint
             .MapPut("/classes/{classId:guid}", HandleAsync);
     }
 
-    private static async Task<Results<NoContent, ValidationProblem>> HandleAsync(
+    private static async Task<Results<NoContent, NotFound, ValidationProblem>> HandleAsync(
         [AsParameters] Parameters parameters,
         [AsParameters] Services services)
     {
-        await Task.CompletedTask;
-        throw new NotImplementedException();
+        var result = await services.Sender.Send(
+            parameters.ToCommand(),
+            services.CancellationToken);
+        return result.ResolveStatusCode();
     }
 
     internal class Validator : AbstractValidator<Parameters>
@@ -47,10 +52,22 @@ public sealed class UpdateClass : IApiEndpoint
 
         [FromBody]
         public required UpdateClassDto Class { get; init; }
+
+        internal UpdateClassCommand ToCommand()
+        {
+            return new()
+            {
+                ClassId = this.ClassId,
+                Class = this.Class,
+            };
+        }
     }
 
     internal readonly struct Services
     {
+        [FromServices]
+        public required ISender Sender { get; init; }
+
         public required CancellationToken CancellationToken { get; init; }
     }
 }

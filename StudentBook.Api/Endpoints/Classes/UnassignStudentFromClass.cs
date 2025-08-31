@@ -1,27 +1,32 @@
 using Asp.Versioning;
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using StudentBook.Api.Core.Features.Classes.Commands;
 using StudentBook.Api.Utils.Abstraction;
+using StudentBook.Api.Utils.Extensions;
 
 namespace StudentBook.Api.Endpoints.Classes;
 
-public sealed class AssignStudent : IApiEndpoint
+public sealed class UnassignStudentFromClass : IApiEndpoint
 {
     public ApiVersion Version => Utils.Constants.Api.Versions.V1;
     public string DefaultTag => Utils.Constants.Api.Tags.Classes;
     public IEndpointConventionBuilder Register(IEndpointRouteBuilder builder)
     {
         return builder
-            .MapPost("/classes/{classId:guid}/students/{studentId:guid}", HandleAsync);
+            .MapDelete("/classes/{classId:guid}/students/{studentId:guid}", HandleAsync);
     }
 
-    private static async Task<Results<NoContent, ValidationProblem>> HandleAsync(
+    private static async Task<Results<NoContent, NotFound, ValidationProblem>> HandleAsync(
         [AsParameters] Parameters parameters,
         [AsParameters] Services services)
     {
-        await Task.CompletedTask;
-        throw new NotImplementedException();
+        var result = await services.Sender.Send(
+            parameters.ToCommand(),
+            services.CancellationToken);
+        return result.ResolveStatusCode();
     }
 
     internal class Validator : AbstractValidator<Parameters>
@@ -42,10 +47,22 @@ public sealed class AssignStudent : IApiEndpoint
 
         [FromRoute]
         public required Guid StudentId { get; init; }
+
+        internal UnassignStudentFromClassCommand ToCommand()
+        {
+            return new()
+            {
+                ClassId = this.ClassId,
+                StudentId = this.StudentId,
+            };
+        }
     }
 
     internal readonly struct Services
     {
+        [FromServices]
+        public required ISender Sender { get; init; }
+
         public required CancellationToken CancellationToken { get; init; }
     }
 }

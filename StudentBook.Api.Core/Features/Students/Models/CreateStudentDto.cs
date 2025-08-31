@@ -1,6 +1,6 @@
-namespace StudentBook.Api.Endpoints.Students.Models;
+namespace StudentBook.Api.Core.Features.Students.Models;
 
-internal sealed record CreateStudentDto
+public sealed record CreateStudentDto
 {
     public required string Identifier { get; init; }
     public required string FirstName { get; init; }

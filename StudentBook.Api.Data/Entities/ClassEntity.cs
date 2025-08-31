@@ -2,14 +2,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using StudentBook.Api.Data.Utils.Abstraction;
 using StudentBook.Api.Data.Utils.Constants;
-using StudentBook.Api.Data.Utils.ValueConverters;
+using StudentBook.Api.Data.Utils.ValueGenerators;
 
 namespace StudentBook.Api.Data.Entities;
 
 public sealed record ClassEntity : BaseEntity<Guid>
 {
     public required string Name { get; set; }
-    public long LeadingTeacherId { get; set; }
+    public required long LeadingTeacherId { get; set; }
 
     public LeadingTeacherEntity? LeadingTeacher { get; set; }
     public ICollection<StudentEntity>? Students { get; set; }
@@ -29,7 +29,7 @@ public sealed record ClassEntity : BaseEntity<Guid>
 
             // Properties
             builder.Property(x => x.Id)
-                .HasConversion(new GuidVersion7Converter());
+                .HasValueGenerator<GuidV7ValueGenerator>();
         }
     }
 }

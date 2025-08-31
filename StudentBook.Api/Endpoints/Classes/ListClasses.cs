@@ -1,7 +1,12 @@
 using Asp.Versioning;
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using StudentBook.Api.Common.Constants;
+using StudentBook.Api.Core.Features.Classes.Models;
+using StudentBook.Api.Core.Features.Classes.Queries;
+using StudentBook.Api.Core.Utils;
 using StudentBook.Api.Utils.Abstraction;
 
 namespace StudentBook.Api.Endpoints.Classes;
@@ -16,12 +21,14 @@ public sealed class ListClasses : IApiEndpoint
             .MapGet("/classes", HandleAsync);
     }
 
-    private static async Task<Results<Ok, ValidationProblem>> HandleAsync(
+    private static async Task<Results<Ok<PaginatedResponseDto<ListClassDto>>, ValidationProblem>> HandleAsync(
         [AsParameters] Parameters parameters,
         [AsParameters] Services services)
     {
-        await Task.CompletedTask;
-        throw new NotImplementedException();
+        var response = await services.Sender.Send(
+            parameters.ToQuery(),
+            services.CancellationToken);
+        return TypedResults.Ok(response);
     }
 
     internal class Validator : AbstractValidator<Parameters>
@@ -33,7 +40,7 @@ public sealed class ListClasses : IApiEndpoint
                 .When(x => x.Page.HasValue);
             this.RuleFor(x => x.Size)
                 .GreaterThanOrEqualTo(0)
-                .LessThanOrEqualTo(Utils.Constants.Pagination.MaxSize)
+                .LessThanOrEqualTo(Pagination.MaxSize)
                 .When(x => x.Size.HasValue);
         }
     }
@@ -45,10 +52,22 @@ public sealed class ListClasses : IApiEndpoint
 
         [FromQuery]
         public int? Size { get; init; }
+
+        internal ListClassesQuery ToQuery()
+        {
+            return new()
+            {
+                Page = this.Page,
+                Size = this.Size,
+            };
+        }
     }
 
     internal readonly struct Services
     {
+        [FromServices]
+        public required ISender Sender { get; init; }
+
         public required CancellationToken CancellationToken { get; init; }
     }
 }

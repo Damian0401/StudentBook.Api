@@ -1,9 +1,12 @@
 using Asp.Versioning;
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using StudentBook.Api.Endpoints.Students.Models;
+using StudentBook.Api.Core.Features.Students.Commands;
+using StudentBook.Api.Core.Features.Students.Models;
 using StudentBook.Api.Utils.Abstraction;
+using StudentBook.Api.Utils.Extensions;
 
 namespace StudentBook.Api.Endpoints.Students;
 
@@ -17,12 +20,14 @@ public sealed class UpdateStudent : IApiEndpoint
             .MapPut("/students/{studentId:guid}", HandleAsync);
     }
 
-    private static async Task<Results<NoContent, ValidationProblem>> HandleAsync(
+    private static async Task<Results<NoContent, NotFound, ValidationProblem>> HandleAsync(
         [AsParameters] Parameters parameters,
         [AsParameters] Services services)
     {
-        await Task.CompletedTask;
-        throw new NotImplementedException();
+        var result = await services.Sender.Send(
+            parameters.ToCommand(),
+            services.CancellationToken);
+        return result.ResolveStatusCode();
     }
 
     internal class Validator : AbstractValidator<Parameters>
@@ -32,17 +37,28 @@ public sealed class UpdateStudent : IApiEndpoint
             this.RuleFor(x => x.StudentId)
                 .NotEmpty();
             this.RuleFor(x => x.Student.Identifier)
+                .NotEmpty()
                 .MaximumLength(256);
             this.RuleFor(x => x.Student.FirstName)
+                .NotEmpty()
                 .MaximumLength(256);
             this.RuleFor(x => x.Student.LastName)
+                .NotEmpty()
                 .MaximumLength(256);
+            this.RuleFor(x => x.Student.DateOfBirth)
+                .NotEmpty();
             this.RuleFor(x => x.Student.City)
-                .MaximumLength(256);
+                .NotEmpty()
+                .MaximumLength(256)
+                .When(x => x.Student.City is not null);
             this.RuleFor(x => x.Student.Street)
-                .MaximumLength(256);
+                .NotEmpty()
+                .MaximumLength(256)
+                .When(x => x.Student.Street is not null);
             this.RuleFor(x => x.Student.PostalCode)
-                .MaximumLength(256);
+                .NotEmpty()
+                .MaximumLength(256)
+                .When(x => x.Student.PostalCode is not null);
         }
     }
 
@@ -53,10 +69,22 @@ public sealed class UpdateStudent : IApiEndpoint
 
         [FromBody]
         public required UpdateStudentDto Student { get; init; }
+
+        internal UpdateStudentCommand ToCommand()
+        {
+            return new()
+            {
+                StudentId = this.StudentId,
+                Student = this.Student,
+            };
+        }
     }
 
     internal readonly struct Services
     {
+        [FromServices]
+        public required ISender Sender { get; init; }
+
         public required CancellationToken CancellationToken { get; init; }
     }
 }
