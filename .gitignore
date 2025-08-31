@@ -485,3 +485,6 @@ $RECYCLE.BIN/
 
 # Added by user
 appsettings.Development.json
+*.db
+*.db-shm
+*.db-wal
